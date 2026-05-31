@@ -126,7 +126,7 @@ This platform indexes regulatory documents and enables natural language Q&A with
 
 The embedding service is a **dedicated microservice** — a key design decision that enables:
 
-![Embedding Service](docs/fincomply_embedding_.svg)
+![Embedding Service](docs/fincomply_embedding_service.svg)
 
 **Why separate service?**
 1. Model loads once (~3GB RAM) — shared by API and Ingestion
@@ -441,12 +441,6 @@ The generator is provider-agnostic. To switch to OpenAI or Claude:
 - [ ] Scheduled document refresh (weekly FATF/BOT updates)
 - [ ] Kubernetes deployment manifests
 - [ ] OpenAI/Claude provider support
-
----
-
-## License
-
-MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
