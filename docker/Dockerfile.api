@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+COPY requirements-api.txt .
+RUN pip install --no-cache-dir -r requirements-api.txt
+
+COPY serving/ ./serving/
+COPY retrieval/ ./retrieval/
+COPY monitoring/ ./monitoring/
+COPY ingestion/__init__.py ./ingestion/__init__.py
+COPY ingestion/config.py ./ingestion/config.py
+COPY ingestion/embedder.py ./ingestion/embedder.py
+
+CMD ["uvicorn", "serving.main:app", "--host", "0.0.0.0", "--port", "8000"]

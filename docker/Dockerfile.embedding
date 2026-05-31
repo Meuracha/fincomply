@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# CPU-only torch first
+RUN pip install --no-cache-dir torch==2.6.0+cpu \
+    --extra-index-url https://download.pytorch.org/whl/cpu
+
+# Embedding service dependencies
+RUN pip install --no-cache-dir \
+    fastapi==0.111.0 \
+    uvicorn==0.30.1 \
+    FlagEmbedding==1.2.10 \
+    sentence-transformers==3.0.1 \
+    redis==5.0.7 \
+    prometheus-fastapi-instrumentator==7.0.0 \
+    pydantic==2.7.1
+
+COPY embedding_service/ ./embedding_service/
+
+CMD ["uvicorn", "embedding_service.main:app", "--host", "0.0.0.0", "--port", "8001"]

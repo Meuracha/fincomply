@@ -1,0 +1,106 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.api
+          push: true
+          tags: ghcr.io/${{ github.repository }}/api:latest
+
+      - name: Build and push ingestion image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.ingestion
+          push: true
+          tags: ghcr.io/${{ github.repository }}/ingestion:latest
+
+      - name: Build and push embedding image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/Dockerfile.embedding
+          push: true
+          tags: ghcr.io/${{ github.repository }}/embedding:latest
+
+  smoke-test:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create .env
+        run: |
+          cp .env.example .env
+          echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> .env
+          echo "COHERE_API_KEY=${{ secrets.COHERE_API_KEY }}" >> .env
+          echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
+          echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
+
+      - name: Start core services
+        run: docker-compose up -d postgres qdrant redis
+        timeout-minutes: 3
+
+      - name: Start API (skip embedding dependency)
+        run: |
+          docker-compose up -d api --no-deps
+        timeout-minutes: 3
+
+      - name: Wait for API health
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8010/health && break || sleep 5
+          done
+
+      - name: Smoke test — health
+        run: curl -sf http://localhost:8010/health | python3 -c "import sys,json; d=json.load(sys.stdin); assert d['status'] in ('ok','degraded')"
+
+      - name: Smoke test — auth login
+        run: |
+          curl -sf -X POST http://localhost:8010/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"username":"admin","password":"${{ secrets.ADMIN_PASSWORD }}"}' \
+            | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'access_token' in d"
+
+      - name: Smoke test — root
+        run: curl -sf http://localhost:8010/ | python3 -c "import sys,json; d=json.load(sys.stdin); assert 'FinComply' in d['message']"
+
+      - name: Tear down
+        if: always()
+        run: docker-compose down
+
+  release:
+    runs-on: ubuntu-latest
+    needs: smoke-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

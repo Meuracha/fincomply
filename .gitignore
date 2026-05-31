@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Environment
+.env
+*.env
+
+# Data
+data/raw/
+data/processed/
+
+# Models (large files)
+models/
+
+# Coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Logs
+logs/
+*.log

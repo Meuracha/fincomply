@@ -1,0 +1,179 @@
+services:
+  # ─── Vector Database ──────────────────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: fincomply_qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/6333'"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  # ─── Database (feedback + query logs) ─────────────────────────
+  postgres:
+    image: postgres:15
+    container_name: fincomply_postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fincomply_db}
+      POSTGRES_USER: ${POSTGRES_USER:-fincomply}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fincomply}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Redis (embedding cache) ─────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: fincomply_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── Embedding Service ───────────────────────────────────────
+  embedding:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.embedding
+    container_name: fincomply_embedding
+    ports:
+      - "8001:8001"
+    environment:
+      - EMBEDDING_MODEL=BAAI/bge-m3
+      - REDIS_URL=redis://redis:6379
+      - CACHE_TTL=3600
+      - BATCH_MAX_SIZE=16
+      - BATCH_WAIT_MS=20
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 900s   # bge-m3 needs ~8-10 min to download + load on first run
+
+  # ─── FastAPI ──────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: fincomply_api
+    ports:
+      - "8010:8000"
+    environment:
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-fincomply_db}
+      - POSTGRES_USER=${POSTGRES_USER:-fincomply}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - COHERE_API_KEY=${COHERE_API_KEY}
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+      - COLLECTION_NAME=${COLLECTION_NAME:-fincomply_docs}
+      - EMBEDDING_SERVICE_URL=http://embedding:8001
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-fincomply-secret-change-me}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-fincomply2024}
+      - TOKEN_EXPIRE_HOURS=${TOKEN_EXPIRE_HOURS:-24}
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      embedding:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ─── Ingestion Worker ─────────────────────────────────────────
+  ingestion:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.ingestion
+    container_name: fincomply_ingestion
+    environment:
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-fincomply_db}
+      - POSTGRES_USER=${POSTGRES_USER:-fincomply}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+      - COHERE_API_KEY=${COHERE_API_KEY}
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY}
+      - COLLECTION_NAME=${COLLECTION_NAME:-fincomply_docs}
+      - PREFECT_API_URL=${PREFECT_API_URL:-http://prefect:4200/api}
+      - EMBEDDING_SERVICE_URL=http://embedding:8001
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      embedding:
+        condition: service_healthy
+
+  # ─── Prefect Server ───────────────────────────────────────────
+  prefect:
+    image: prefecthq/prefect:3-latest
+    container_name: fincomply_prefect
+    command: prefect server start --host 0.0.0.0
+    ports:
+      - "4200:4200"
+    environment:
+      - PREFECT_UI_API_URL=http://localhost:4200/api
+    volumes:
+      - prefect_data:/root/.prefect
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4200/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ─── Streamlit Dashboard ──────────────────────────────────────
+  # ─── Nginx Reverse Proxy ──────────────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: fincomply_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./dashboard/static:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+
+volumes:
+  qdrant_data:
+  postgres_data:
+  prefect_data:
+  redis_data:
