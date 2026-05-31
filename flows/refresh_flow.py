@@ -2,17 +2,15 @@
 Prefect refresh flow — re-embeds all documents when embedding model is updated.
 Runs weekly or triggered manually.
 """
-import logging
 from pathlib import Path
 
 from prefect import flow, task, get_run_logger
-from prefect.schedules import CronSchedule
 
 from ingestion.config import config
 from ingestion.loaders.pdf_loader import PDFLoader
 from ingestion.loaders.docx_loader import DOCXLoader
 from ingestion.chunker import SemanticChunker
-from ingestion.embedder import BGEEmbedder
+from ingestion.embedder import BGEFullEmbedder
 from ingestion.indexer import QdrantIndexer
 
 
@@ -97,7 +95,7 @@ def refresh_flow(data_dir: str = "/app/data/raw"):
         return
 
     # Step 3: Re-initialize embedder and indexer (picks up new model version)
-    embedder = BGEEmbedder(model_name=config.embedding_model)
+    embedder = BGEFullEmbedder(model_name=config.embedding_model)
     indexer = QdrantIndexer(
         host=config.qdrant_host,
         port=config.qdrant_port,

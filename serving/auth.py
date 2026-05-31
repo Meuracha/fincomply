@@ -24,6 +24,7 @@ ACCESS_TOKEN_EXPIRE_HOURS = int(os.getenv("TOKEN_EXPIRE_HOURS", "24"))
 # Format: {username: hashed_password}
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
+
 def get_users() -> dict:
     """Load users from environment variables."""
     users = {}
@@ -47,9 +48,12 @@ def get_users() -> dict:
     return users
 
 # ─── Schemas ──────────────────────────────────────────────────
+
+
 class LoginRequest(BaseModel):
     username: str
     password: str
+
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -59,8 +63,11 @@ class TokenResponse(BaseModel):
     expires_in: int
 
 # ─── Core auth functions ───────────────────────────────────────
+
+
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
+
 
 def authenticate_user(username: str, password: str) -> Optional[dict]:
     users = get_users()
@@ -71,6 +78,7 @@ def authenticate_user(username: str, password: str) -> Optional[dict]:
         return None
     return user
 
+
 def create_access_token(data: dict) -> str:
     payload = data.copy()
     expire = datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
@@ -79,6 +87,7 @@ def create_access_token(data: dict) -> str:
 
 # ─── FastAPI dependency ────────────────────────────────────────
 security = HTTPBearer(auto_error=False)
+
 
 def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> dict:
     """Validate JWT token and return current user."""
@@ -100,6 +109,7 @@ def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depen
             detail="Invalid or expired token",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
 
 def require_admin(user: dict = Depends(get_current_user)) -> dict:
     if user.get("role") != "admin":

@@ -1,8 +1,6 @@
 """
 Unit tests for ingestion pipeline.
 """
-import pytest
-from unittest.mock import MagicMock, patch
 from ingestion.chunker import SemanticChunker
 from ingestion.loaders.pdf_loader import RawDocument, clean_thai_text
 

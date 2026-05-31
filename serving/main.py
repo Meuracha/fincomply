@@ -5,14 +5,11 @@ FastAPI serving layer for RAG pipeline.
 import time
 import uuid
 import logging
-from contextlib import asynccontextmanager
-from typing import List, Optional
-
-import os
-import shutil
 import subprocess
-import tempfile
+import threading
+from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import List, Optional
 
 import psycopg2
 import psycopg2.extras
@@ -472,7 +469,6 @@ def export_query(query_id: str, user: dict = Depends(get_current_user)):
     if not row:
         raise HTTPException(status_code=404, detail="Query not found")
 
-    import json
     sources = row.get("sources") or []
     sources_html = ""
     for i, src in enumerate(sources, 1):

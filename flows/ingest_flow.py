@@ -1,8 +1,6 @@
 """
 Prefect ingestion flow: PDF/DOCX → Chunk → Embed → Index to Qdrant → Log to PostgreSQL
 """
-import logging
-import os
 from pathlib import Path
 
 from prefect import flow, task, get_run_logger

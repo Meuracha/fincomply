@@ -3,8 +3,6 @@ DOCX document loader using python-docx.
 """
 import logging
 from pathlib import Path
-from dataclasses import dataclass
-from typing import List
 
 from docx import Document
 

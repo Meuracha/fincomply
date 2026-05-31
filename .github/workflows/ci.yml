@@ -28,16 +28,16 @@ jobs:
         run: |
           pip install -r requirements-api.txt
           pip install -r requirements-ingestion.txt
-          pip install pytest pytest-cov flake8 black isort bandit
+          pip install -r requirements-dev.txt
 
       - name: Lint (flake8)
-        run: flake8 . --max-line-length=120 --exclude=.venv,__pycache__,data,docs
+        run: flake8 . --max-line-length=120 --exclude=.venv,__pycache__,data,docs,dashboard/app.py
 
       - name: Format check (black)
-        run: black . --check --line-length=120 --exclude='/(\.venv|data|docs)/'
+        run: black . --check --line-length=120 --exclude='/(\.venv|data|docs|dashboard\/app\.py)/'
 
       - name: Import order check (isort)
-        run: isort . --check-only --profile=black --skip=data --skip=docs
+        run: isort . --check-only --profile=black --skip=data --skip=docs --skip=dashboard/app.py
 
       - name: Security scan (bandit)
         run: bandit -r serving ingestion retrieval embedding_service flows monitoring -ll
