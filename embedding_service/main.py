@@ -6,6 +6,7 @@ Production-grade embedding microservice with:
 - Health check with model warmup
 - Prometheus metrics
 """
+
 import asyncio
 import hashlib
 import json
@@ -13,22 +14,22 @@ import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 import redis.asyncio as aioredis
 from fastapi import FastAPI, HTTPException
+from FlagEmbedding import BGEM3FlagModel
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
-from FlagEmbedding import BGEM3FlagModel
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 MODEL_NAME = os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
-CACHE_TTL = int(os.getenv("CACHE_TTL", "3600"))       # 1 hour
+CACHE_TTL = int(os.getenv("CACHE_TTL", "3600"))  # 1 hour
 BATCH_MAX_SIZE = int(os.getenv("BATCH_MAX_SIZE", "16"))
-BATCH_WAIT_MS = int(os.getenv("BATCH_WAIT_MS", "20")) # wait 20ms to collect batch
+BATCH_WAIT_MS = int(os.getenv("BATCH_WAIT_MS", "20"))  # wait 20ms to collect batch
 
 app_state = {
     "model": None,
@@ -93,9 +94,7 @@ class BatchProcessor:
             # Process batch
             try:
                 logger.info(f"Processing batch: {len(all_texts)} texts from {len(batch_requests)} requests")
-                output = await asyncio.get_event_loop().run_in_executor(
-                    None, self._encode, all_texts
-                )
+                output = await asyncio.get_event_loop().run_in_executor(None, self._encode, all_texts)
 
                 # Distribute results back to each request
                 idx = 0
@@ -103,10 +102,12 @@ class BatchProcessor:
                     n = len(req.texts)
                     result = []
                     for i in range(n):
-                        result.append({
-                            "dense": output["dense_vecs"][idx + i].tolist(),
-                            "sparse": {str(k): float(v) for k, v in output["lexical_weights"][idx + i].items()},
-                        })
+                        result.append(
+                            {
+                                "dense": output["dense_vecs"][idx + i].tolist(),
+                                "sparse": {str(k): float(v) for k, v in output["lexical_weights"][idx + i].items()},
+                            }
+                        )
                     req.future.set_result(result)
                     idx += n
 

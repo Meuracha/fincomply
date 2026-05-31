@@ -2,6 +2,7 @@
 Semantic chunking using LlamaIndex.
 Falls back to fixed-size chunking if semantic chunking fails.
 """
+
 import logging
 import uuid
 from dataclasses import dataclass
@@ -67,7 +68,7 @@ class SemanticChunker:
                 if current:
                     chunks.append(current)
                 # overlap: keep last N characters
-                overlap_text = current[-self.chunk_overlap:] if current else ""
+                overlap_text = current[-self.chunk_overlap :] if current else ""
                 current = overlap_text + " " + para if overlap_text else para
 
         if current:

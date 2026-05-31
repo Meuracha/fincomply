@@ -2,11 +2,12 @@
 Web loader — downloads PDF documents from regulatory websites.
 Supports FATF, Bank of Thailand, and SEC Thailand.
 """
+
 import logging
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List
-from dataclasses import dataclass
 
 import requests
 
@@ -27,10 +28,7 @@ DOCUMENT_SOURCES = {
 }
 
 HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (compatible; FinComply-Ingestion/1.0; "
-        "+https://github.com/meuracha/fincomply)"
-    )
+    "User-Agent": ("Mozilla/5.0 (compatible; FinComply-Ingestion/1.0; " "+https://github.com/meuracha/fincomply)")
 }
 
 

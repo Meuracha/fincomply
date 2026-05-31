@@ -1,15 +1,18 @@
 """
 API tests for FastAPI serving layer.
 """
+
 import os
-import pytest
 from unittest.mock import MagicMock, patch
+
+import pytest
 from fastapi.testclient import TestClient
 
 
 @pytest.fixture
 def client():
     from serving.main import app
+
     return TestClient(app)
 
 
@@ -17,10 +20,7 @@ def client():
 def auth_token(client):
     """Get a valid JWT token for testing."""
     password = os.getenv("ADMIN_PASSWORD", "fincomply2024")
-    response = client.post("/auth/login", json={
-        "username": "admin",
-        "password": password
-    })
+    response = client.post("/auth/login", json={"username": "admin", "password": password})
     assert response.status_code == 200
     return response.json()["access_token"]
 
@@ -46,10 +46,7 @@ class TestHealthEndpoint:
 class TestAuthentication:
     def test_login_success(self, client):
         password = os.getenv("ADMIN_PASSWORD", "fincomply2024")
-        response = client.post("/auth/login", json={
-            "username": "admin",
-            "password": password
-        })
+        response = client.post("/auth/login", json={"username": "admin", "password": password})
         assert response.status_code == 200
         data = response.json()
         assert "access_token" in data
@@ -57,17 +54,11 @@ class TestAuthentication:
         assert data["username"] == "admin"
 
     def test_login_wrong_password(self, client):
-        response = client.post("/auth/login", json={
-            "username": "admin",
-            "password": "wrongpassword"
-        })
+        response = client.post("/auth/login", json={"username": "admin", "password": "wrongpassword"})
         assert response.status_code == 401
 
     def test_login_wrong_username(self, client):
-        response = client.post("/auth/login", json={
-            "username": "nonexistent",
-            "password": "password"
-        })
+        response = client.post("/auth/login", json={"username": "nonexistent", "password": "password"})
         assert response.status_code == 401
 
     def test_me_endpoint_with_valid_token(self, client, auth_headers):
@@ -84,9 +75,7 @@ class TestAuthentication:
         assert response.status_code == 401
 
     def test_protected_endpoint_with_invalid_token(self, client):
-        response = client.get("/documents", headers={
-            "Authorization": "Bearer invalid-token"
-        })
+        response = client.get("/documents", headers={"Authorization": "Bearer invalid-token"})
         assert response.status_code == 401
 
 
@@ -115,8 +104,5 @@ class TestIngestEndpoint:
             assert response.status_code in (200, 404)
 
     def test_ingest_status_not_found(self, client, auth_headers):
-        response = client.get(
-            "/ingest/status/nonexistent-job-id",
-            headers=auth_headers
-        )
+        response = client.get("/ingest/status/nonexistent-job-id", headers=auth_headers)
         assert response.status_code == 404

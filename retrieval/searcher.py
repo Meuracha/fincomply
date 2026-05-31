@@ -1,14 +1,15 @@
 """
 Hybrid search: dense vector (bge-m3) + sparse (BM25-like) via Qdrant RRF fusion.
 """
+
 import logging
 from typing import List
 
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
-    Prefetch,
-    FusionQuery,
     Fusion,
+    FusionQuery,
+    Prefetch,
     SparseVector,
 )
 

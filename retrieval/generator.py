@@ -2,6 +2,7 @@
 LLM answer generation using Groq (llama-3.1-70b).
 Constructs RAG prompt from reranked context chunks.
 """
+
 import logging
 from typing import List
 
@@ -9,11 +10,11 @@ from groq import Groq
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """You are a financial compliance expert assistant with deep knowledge 
-of AML (Anti-Money Laundering) regulations, FATF guidelines, Bank of Thailand policies, 
+SYSTEM_PROMPT = """You are a financial compliance expert assistant with deep knowledge
+of AML (Anti-Money Laundering) regulations, FATF guidelines, Bank of Thailand policies,
 and SEC regulations.
 
-Answer questions based ONLY on the provided context. If the answer is not in the context, 
+Answer questions based ONLY on the provided context. If the answer is not in the context,
 say "I cannot find this information in the available regulatory documents."
 
 Always cite the source document and page number when available.
@@ -54,7 +55,7 @@ Answer based on the context above:"""
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": prompt},
             ],
-            temperature=0.1,    # low temperature for factual accuracy
+            temperature=0.1,  # low temperature for factual accuracy
             max_tokens=1024,
         )
 

@@ -2,34 +2,38 @@
 FinComply API v1.0
 FastAPI serving layer for RAG pipeline.
 """
-import time
-import uuid
+
 import logging
 import subprocess
 import threading
+import time
+import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import List, Optional
 
 import psycopg2
 import psycopg2.extras
-from fastapi import FastAPI, HTTPException, UploadFile, File, Query, Depends
-from fastapi.responses import StreamingResponse
+from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from prometheus_fastapi_instrumentator import Instrumentator
 from pydantic import BaseModel
 
 from ingestion.config import config
 from ingestion.embedder import BGEEmbedder
-from retrieval.searcher import HybridSearcher
-from retrieval.reranker import CohereReranker
-from retrieval.generator import GroqGenerator
 from monitoring.langfuse_client import FinComplyTracer
+from retrieval.generator import GroqGenerator
+from retrieval.reranker import CohereReranker
+from retrieval.searcher import HybridSearcher
 from serving.auth import (
-    LoginRequest, TokenResponse,
-    authenticate_user, create_access_token,
-    get_current_user, require_admin,
     ACCESS_TOKEN_EXPIRE_HOURS,
+    LoginRequest,
+    TokenResponse,
+    authenticate_user,
+    create_access_token,
+    get_current_user,
+    require_admin,
 )
 
 logger = logging.getLogger(__name__)
@@ -106,7 +110,7 @@ class QueryResponse(BaseModel):
 
 
 class FeedbackRequest(BaseModel):
-    rating: int       # 1 = thumbs up, -1 = thumbs down
+    rating: int  # 1 = thumbs up, -1 = thumbs down
     comment: Optional[str] = ""
 
 
@@ -214,8 +218,7 @@ def query(req: QueryRequest, user: dict = Depends(get_current_user)):
             INSERT INTO query_logs (id, query_text, answer, sources, latency_ms)
             VALUES (%s, %s, %s, %s, %s)
             """,
-            (query_id, req.query, result["answer"],
-             psycopg2.extras.Json(result["sources"]), latency_ms),
+            (query_id, req.query, result["answer"], psycopg2.extras.Json(result["sources"]), latency_ms),
         )
         conn.commit()
         cur.close()
@@ -297,9 +300,7 @@ def list_documents(user: dict = Depends(get_current_user)):
     conn = get_pg()
     try:
         cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-        cur.execute(
-            "SELECT * FROM documents WHERE status = 'indexed' ORDER BY indexed_at DESC"
-        )
+        cur.execute("SELECT * FROM documents WHERE status = 'indexed' ORDER BY indexed_at DESC")
         rows = [dict(r) for r in cur.fetchall()]
         cur.close()
     finally:
@@ -310,12 +311,11 @@ def list_documents(user: dict = Depends(get_current_user)):
 @app.delete("/documents/{filename}")
 def delete_document(filename: str, user: dict = Depends(require_admin)):
     # Remove from Qdrant
-    from qdrant_client.models import Filter, FieldCondition, MatchValue
+    from qdrant_client.models import FieldCondition, Filter, MatchValue
+
     app_state["searcher"].client.delete(
         collection_name=config.collection_name,
-        points_selector=Filter(
-            must=[FieldCondition(key="filename", match=MatchValue(value=filename))]
-        ),
+        points_selector=Filter(must=[FieldCondition(key="filename", match=MatchValue(value=filename))]),
     )
 
     # Update PostgreSQL
@@ -366,19 +366,19 @@ async def upload_document(file: UploadFile = File(...), user: dict = Depends(req
 
 
 # ─── Background job tracking ──────────────────────────────────
-import threading
 _jobs: dict = {}  # {job_id: {status, message, started_at, finished_at}}
 
 
 def _run_ingest_job(job_id: str):
     """Run ingestion in background thread."""
-    import subprocess
     _jobs[job_id]["status"] = "running"
     _jobs[job_id]["message"] = "Ingestion started..."
     try:
         result = subprocess.run(
             ["python", "-m", "flows.ingest_flow"],
-            capture_output=True, text=True, timeout=1200,
+            capture_output=True,
+            text=True,
+            timeout=1200,
         )
         if result.returncode == 0:
             _jobs[job_id]["status"] = "completed"
@@ -474,7 +474,7 @@ def export_query(query_id: str, user: dict = Depends(get_current_user)):
     for i, src in enumerate(sources, 1):
         sources_html += f"""
         <div class="source">
-            <div class="source-header">[{i:02d}] {src.get('filename','—')} — Page {src.get('page_num','—')} | {src.get('source','—')}</div>
+            <div class="source-header">[{i:02d}] {src.get('filename','—')} — Page {src.get('page_num','—')} | {src.get('source','—')}</div>  # noqa: E501
             <div class="source-body">{src.get('text','')[:400]}...</div>
         </div>"""
 
@@ -489,17 +489,17 @@ def export_query(query_id: str, user: dict = Depends(get_current_user)):
   .header {{ border-bottom: 3px solid #38bdf8; padding-bottom: 16px; margin-bottom: 24px; }}
   .brand {{ font-size: 24px; font-weight: 700; color: #0ea5e9; }}
   .meta {{ font-size: 12px; color: #64748b; margin-top: 4px; font-family: monospace; }}
-  .section-title {{ font-size: 11px; font-weight: 600; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; margin: 24px 0 8px; }}
-  .query-box {{ background: #f0f9ff; border-left: 4px solid #38bdf8; padding: 16px 20px; border-radius: 4px; font-size: 16px; font-weight: 500; }}
+  .section-title {{ font-size: 11px; font-weight: 600; color: #94a3b8; letter-spacing: 2px; text-transform: uppercase; margin: 24px 0 8px; }}  # noqa: E501
+  .query-box {{ background: #f0f9ff; border-left: 4px solid #38bdf8; padding: 16px 20px; border-radius: 4px; font-size: 16px; font-weight: 500; }}  # noqa: E501
   .answer-box {{ background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px; font-size: 14px; }}
   .stats {{ display: flex; gap: 24px; margin: 16px 0; }}
   .stat {{ background: #f1f5f9; padding: 12px 16px; border-radius: 6px; text-align: center; }}
   .stat-val {{ font-size: 20px; font-weight: 700; color: #0ea5e9; font-family: monospace; }}
   .stat-lbl {{ font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }}
-  .source {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; overflow: hidden; }}
-  .source-header {{ background: #e0f2fe; padding: 10px 14px; font-size: 12px; font-weight: 600; font-family: monospace; color: #0369a1; }}
+  .source {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin-bottom: 10px; overflow: hidden; }}  # noqa: E501
+  .source-header {{ background: #e0f2fe; padding: 10px 14px; font-size: 12px; font-weight: 600; font-family: monospace; color: #0369a1; }}  # noqa: E501
   .source-body {{ padding: 12px 14px; font-size: 13px; color: #475569; }}
-  .footer {{ margin-top: 40px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; }}
+  .footer {{ margin-top: 40px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 11px; color: #94a3b8; text-align: center; }}  # noqa: E501
 </style>
 </head>
 <body>

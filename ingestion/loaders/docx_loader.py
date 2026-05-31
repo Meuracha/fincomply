@@ -1,6 +1,7 @@
 """
 DOCX document loader using python-docx.
 """
+
 import logging
 from pathlib import Path
 
@@ -19,9 +20,7 @@ class DOCXLoader:
             raise FileNotFoundError(f"DOCX not found: {path}")
 
         doc = Document(str(path))
-        full_text = "\n".join(
-            para.text.strip() for para in doc.paragraphs if para.text.strip()
-        )
+        full_text = "\n".join(para.text.strip() for para in doc.paragraphs if para.text.strip())
 
         pages = [{"page_num": 1, "text": full_text}]
         logger.info(f"Loaded {path.name}: {len(full_text)} characters")

@@ -1,6 +1,7 @@
 """
 Unit tests for ingestion pipeline.
 """
+
 from ingestion.chunker import SemanticChunker
 from ingestion.loaders.pdf_loader import RawDocument, clean_thai_text
 

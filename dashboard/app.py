@@ -2,6 +2,7 @@
 FinComply Dashboard — Financial Compliance Intelligence Platform
 Design direction: Bloomberg Terminal meets modern fintech — dark, data-dense, authoritative
 """
+
 import os
 import requests
 import streamlit as st
@@ -21,21 +22,22 @@ st.set_page_config(
 
 # ─── Design System ────────────────────────────────────────────
 COLORS = {
-    "bg":       "#080c14",
-    "surface":  "#0d1320",
-    "panel":    "#111827",
-    "border":   "#1e2d45",
-    "accent":   "#0ea5e9",
-    "accent2":  "#38bdf8",
-    "gold":     "#f59e0b",
-    "green":    "#10b981",
-    "red":      "#ef4444",
-    "text":     "#e2e8f0",
-    "muted":    "#4b6280",
-    "dim":      "#1e3a5f",
+    "bg": "#080c14",
+    "surface": "#0d1320",
+    "panel": "#111827",
+    "border": "#1e2d45",
+    "accent": "#0ea5e9",
+    "accent2": "#38bdf8",
+    "gold": "#f59e0b",
+    "green": "#10b981",
+    "red": "#ef4444",
+    "text": "#e2e8f0",
+    "muted": "#4b6280",
+    "dim": "#1e3a5f",
 }
 
-st.markdown(f"""
+st.markdown(
+    f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
 
@@ -181,7 +183,9 @@ st.markdown(f"""
         font-size: 12px !important;
     }}
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
 # ─── Plotly theme ─────────────────────────────────────────────
@@ -208,13 +212,16 @@ def get_health():
 
 # ─── Sidebar ──────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div style="padding: 24px 16px 20px; border-bottom: 1px solid {COLORS['border']}; margin-bottom: 8px;">
         <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: {COLORS['muted']}; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px;">SYSTEM</div>
         <div style="font-family: 'IBM Plex Sans', sans-serif; font-size: 20px; font-weight: 700; color: {COLORS['text']};">FinComply</div>
         <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: {COLORS['accent']}; letter-spacing: 1px; margin-top: 4px;">COMPLIANCE INTELLIGENCE v1.0</div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     page = st.radio(
         "NAV",
@@ -224,31 +231,41 @@ with st.sidebar:
 
     # System status
     health = get_health()
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div style="padding: 16px; margin-top: 16px; border-top: 1px solid {COLORS['border']};">
         <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: {COLORS['muted']}; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">SYSTEM STATUS</div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     if health:
         status = health.get("status", "unknown")
         components = [
-            ("VECTOR DB",  health.get("qdrant", False)),
-            ("DATABASE",   health.get("postgres", False)),
-            ("AI MODEL",   health.get("model_loaded", False)),
+            ("VECTOR DB", health.get("qdrant", False)),
+            ("DATABASE", health.get("postgres", False)),
+            ("AI MODEL", health.get("model_loaded", False)),
         ]
         for name, ok in components:
             color = COLORS["green"] if ok else COLORS["red"]
             dot = "●" if ok else "○"
-            st.markdown(f"""
+            st.markdown(
+                f"""
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: {COLORS['muted']}; letter-spacing: 1px;">{name}</span>
                 <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: {color};">{dot} {'OK' if ok else 'ERR'}</span>
             </div>
-            """, unsafe_allow_html=True)
+            """,
+                unsafe_allow_html=True,
+            )
     else:
-        st.markdown(f'<div style="font-family: IBM Plex Mono; font-size: 11px; color: {COLORS["red"]};">● OFFLINE</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="font-family: IBM Plex Mono; font-size: 11px; color: {COLORS["red"]};">● OFFLINE</div>',
+            unsafe_allow_html=True,
+        )
 
-    st.markdown(f"""
+    st.markdown(
+        f"""
     </div>
     <div style="padding: 0 16px; margin-top: auto;">
         <div style="font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: {COLORS['border']}; letter-spacing: 1px; line-height: 1.8;">
@@ -257,12 +274,15 @@ with st.sidebar:
             CACHE: Redis
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 
 # ─── Page header helper ───────────────────────────────────────
 def page_header(title: str, subtitle: str, tag: str = ""):
-    st.markdown(f"""
+    st.markdown(
+        f"""
     <div style="padding: 8px 0 28px; border-bottom: 1px solid {COLORS['border']}; margin-bottom: 28px;">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
             <div style="font-family: 'IBM Plex Sans', sans-serif; font-size: 26px; font-weight: 700; color: {COLORS['text']};">{title}</div>
@@ -270,7 +290,9 @@ def page_header(title: str, subtitle: str, tag: str = ""):
         </div>
         <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: {COLORS['muted']}; letter-spacing: 0.5px;">{subtitle}</div>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 
 # ─── Page 1: Q&A Interface ────────────────────────────────────
@@ -293,7 +315,10 @@ if page == "Q&A Interface":
                 st.rerun()
 
     # Query input
-    st.markdown(f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;">QUERY INPUT</div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;">QUERY INPUT</div>',
+        unsafe_allow_html=True,
+    )
     query = st.text_area(
         "query",
         value=st.session_state.get("query_input", ""),
@@ -304,7 +329,10 @@ if page == "Q&A Interface":
 
     col1, col2, col3 = st.columns([1, 1, 4])
     with col1:
-        st.markdown(f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; margin-bottom: 4px;">SOURCES</div>', unsafe_allow_html=True)
+        st.markdown(
+            f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; margin-bottom: 4px;">SOURCES</div>',
+            unsafe_allow_html=True,
+        )
         top_k = st.slider("k", 1, 10, 5, label_visibility="collapsed")
     with col3:
         st.write("")
@@ -322,7 +350,8 @@ if page == "Q&A Interface":
                 st.session_state["last_query_id"] = resp.get("query_id")
 
                 # Answer
-                st.markdown(f"""
+                st.markdown(
+                    f"""
                 <div style="
                     background: {COLORS['panel']};
                     border: 1px solid {COLORS['border']};
@@ -339,11 +368,15 @@ if page == "Q&A Interface":
                     <div style="font-family: IBM Plex Mono; font-size: 9px; color: {COLORS['accent']}; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">RESPONSE</div>
                     {resp["answer"]}
                 </div>
-                """, unsafe_allow_html=True)
+                """,
+                    unsafe_allow_html=True,
+                )
 
                 # Metrics row
-                latency = resp['latency_ms']
-                latency_color = COLORS["green"] if latency < 3000 else COLORS["gold"] if latency < 8000 else COLORS["red"]
+                latency = resp["latency_ms"]
+                latency_color = (
+                    COLORS["green"] if latency < 3000 else COLORS["gold"] if latency < 8000 else COLORS["red"]
+                )
                 m1, m2, m3, m4 = st.columns(4)
                 m1.metric("LATENCY", f"{latency}ms")
                 m2.metric("SOURCES RETRIEVED", len(resp["sources"]))
@@ -351,20 +384,26 @@ if page == "Q&A Interface":
                 m4.metric("QUERY ID", resp.get("query_id", "—")[:8] + "...")
 
                 # Sources
-                st.markdown(f"""
+                st.markdown(
+                    f"""
                 <div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS['muted']}; letter-spacing: 2px; text-transform: uppercase; margin: 24px 0 12px;">
                     RETRIEVED DOCUMENTS [{len(resp['sources'])}]
                 </div>
-                """, unsafe_allow_html=True)
+                """,
+                    unsafe_allow_html=True,
+                )
 
                 for i, src in enumerate(resp["sources"], 1):
                     score = src.get("rerank_score", src.get("score", 0))
                     score_pct = int(score * 100) if score <= 1 else int(score)
-                    score_color = COLORS["green"] if score_pct > 70 else COLORS["gold"] if score_pct > 30 else COLORS["muted"]
+                    score_color = (
+                        COLORS["green"] if score_pct > 70 else COLORS["gold"] if score_pct > 30 else COLORS["muted"]
+                    )
                     bar_width = min(score_pct, 100)
 
                     with st.expander(f"[{i:02d}] {src['filename']}  —  pg.{src['page_num']}  —  {src['source']}"):
-                        st.markdown(f"""
+                        st.markdown(
+                            f"""
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                             <div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS['muted']};">RELEVANCE</div>
                             <div style="flex: 1; height: 3px; background: {COLORS['border']}; border-radius: 2px; overflow: hidden;">
@@ -372,11 +411,19 @@ if page == "Q&A Interface":
                             </div>
                             <div style="font-family: IBM Plex Mono; font-size: 11px; color: {score_color}; font-weight: 600;">{score:.3f}</div>
                         </div>
-                        """, unsafe_allow_html=True)
-                        st.markdown(f'<div style="font-size: 13px; color: {COLORS["text"]}; line-height: 1.7; padding: 8px 0;">{src.get("excerpt", src.get("text", ""))}</div>', unsafe_allow_html=True)
+                        """,
+                            unsafe_allow_html=True,
+                        )
+                        st.markdown(
+                            f'<div style="font-size: 13px; color: {COLORS["text"]}; line-height: 1.7; padding: 8px 0;">{src.get("excerpt", src.get("text", ""))}</div>',
+                            unsafe_allow_html=True,
+                        )
 
                 # Feedback
-                st.markdown(f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; text-transform: uppercase; margin: 24px 0 10px;">FEEDBACK</div>', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; text-transform: uppercase; margin: 24px 0 10px;">FEEDBACK</div>',
+                    unsafe_allow_html=True,
+                )
                 fb1, fb2 = st.columns(2)
                 if fb1.button("↑ MARK HELPFUL", use_container_width=True):
                     requests.post(f"{API_URL}/feedback/{resp['query_id']}", json={"rating": 1})
@@ -418,21 +465,33 @@ elif page == "Document Manager":
             col1, col2 = st.columns([3, 2])
 
             with col1:
-                st.markdown(f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">INDEXED DOCUMENTS</div>', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px;">INDEXED DOCUMENTS</div>',
+                    unsafe_allow_html=True,
+                )
                 display = df.copy()
                 display["indexed_at"] = pd.to_datetime(display["indexed_at"]).dt.strftime("%Y-%m-%d %H:%M")
                 display["chunk_count"] = display["chunk_count"].fillna(0).astype(int)
                 display["page_count"] = display["page_count"].fillna(0).astype(int)
                 st.dataframe(
-                    display[["filename", "source", "page_count", "chunk_count", "status", "indexed_at"]].rename(columns={
-                        "filename": "Document", "source": "Source",
-                        "page_count": "Pages", "chunk_count": "Chunks",
-                        "status": "Status", "indexed_at": "Indexed At",
-                    }),
-                    use_container_width=True, hide_index=True,
+                    display[["filename", "source", "page_count", "chunk_count", "status", "indexed_at"]].rename(
+                        columns={
+                            "filename": "Document",
+                            "source": "Source",
+                            "page_count": "Pages",
+                            "chunk_count": "Chunks",
+                            "status": "Status",
+                            "indexed_at": "Indexed At",
+                        }
+                    ),
+                    use_container_width=True,
+                    hide_index=True,
                 )
 
-                st.markdown(f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; text-transform: uppercase; margin: 20px 0 10px;">REMOVE DOCUMENT</div>', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; text-transform: uppercase; margin: 20px 0 10px;">REMOVE DOCUMENT</div>',
+                    unsafe_allow_html=True,
+                )
                 to_delete = st.selectbox("doc", [d["filename"] for d in docs], label_visibility="collapsed")
                 if st.button("⊗ DELETE DOCUMENT", type="secondary"):
                     resp = requests.delete(f"{API_URL}/documents/{to_delete}", timeout=10)
@@ -444,19 +503,21 @@ elif page == "Document Manager":
 
             with col2:
                 # Chunks by document bar chart
-                fig1 = go.Figure(go.Bar(
-                    x=df["chunk_count"].fillna(0).astype(int),
-                    y=df["filename"],
-                    orientation="h",
-                    marker=dict(
-                        color=df["chunk_count"].fillna(0),
-                        colorscale=[[0, COLORS["dim"]], [1, COLORS["accent"]]],
-                        showscale=False,
-                    ),
-                    text=df["chunk_count"].fillna(0).astype(int),
-                    textposition="outside",
-                    textfont=dict(family="IBM Plex Mono", size=11, color=COLORS["muted"]),
-                ))
+                fig1 = go.Figure(
+                    go.Bar(
+                        x=df["chunk_count"].fillna(0).astype(int),
+                        y=df["filename"],
+                        orientation="h",
+                        marker=dict(
+                            color=df["chunk_count"].fillna(0),
+                            colorscale=[[0, COLORS["dim"]], [1, COLORS["accent"]]],
+                            showscale=False,
+                        ),
+                        text=df["chunk_count"].fillna(0).astype(int),
+                        textposition="outside",
+                        textfont=dict(family="IBM Plex Mono", size=11, color=COLORS["muted"]),
+                    )
+                )
                 fig1.update_layout(
                     **CHART_LAYOUT,
                     title="Chunks per Document",
@@ -467,13 +528,15 @@ elif page == "Document Manager":
 
                 # Source donut
                 by_source = df.groupby("source").size().reset_index(name="count")
-                fig2 = go.Figure(go.Pie(
-                    labels=by_source["source"],
-                    values=by_source["count"],
-                    hole=0.6,
-                    marker=dict(colors=[COLORS["accent"], COLORS["gold"], COLORS["green"]]),
-                    textfont=dict(family="IBM Plex Mono", size=10),
-                ))
+                fig2 = go.Figure(
+                    go.Pie(
+                        labels=by_source["source"],
+                        values=by_source["count"],
+                        hole=0.6,
+                        marker=dict(colors=[COLORS["accent"], COLORS["gold"], COLORS["green"]]),
+                        textfont=dict(family="IBM Plex Mono", size=10),
+                    )
+                )
                 fig2.update_layout(
                     **CHART_LAYOUT,
                     title="By Source",
@@ -518,47 +581,66 @@ elif page == "Query Analytics":
             with c1:
                 daily = df.groupby("date").size().reset_index(name="queries")
                 fig1 = go.Figure()
-                fig1.add_trace(go.Scatter(
-                    x=daily["date"], y=daily["queries"],
-                    fill="tozeroy",
-                    fillcolor=f"rgba(14,165,233,0.12)",
-                    line=dict(color=COLORS["accent"], width=2),
-                    mode="lines+markers",
-                    marker=dict(size=5, color=COLORS["accent"]),
-                ))
+                fig1.add_trace(
+                    go.Scatter(
+                        x=daily["date"],
+                        y=daily["queries"],
+                        fill="tozeroy",
+                        fillcolor=f"rgba(14,165,233,0.12)",
+                        line=dict(color=COLORS["accent"], width=2),
+                        mode="lines+markers",
+                        marker=dict(size=5, color=COLORS["accent"]),
+                    )
+                )
                 fig1.update_layout(**CHART_LAYOUT, title="QUERY VOLUME", height=220)
                 st.plotly_chart(fig1, use_container_width=True)
 
             with c2:
                 daily_lat = df.groupby("date")["latency_ms"].agg(["mean", "max", "min"]).reset_index()
                 fig2 = go.Figure()
-                fig2.add_trace(go.Scatter(
-                    x=daily_lat["date"], y=daily_lat["max"],
-                    name="MAX", line=dict(color=COLORS["red"], width=1, dash="dot"),
-                ))
-                fig2.add_trace(go.Scatter(
-                    x=daily_lat["date"], y=daily_lat["mean"],
-                    name="AVG", line=dict(color=COLORS["gold"], width=2),
-                    fill="tonexty", fillcolor="rgba(245,158,11,0.06)",
-                ))
-                fig2.add_trace(go.Scatter(
-                    x=daily_lat["date"], y=daily_lat["min"],
-                    name="MIN", line=dict(color=COLORS["green"], width=1, dash="dot"),
-                ))
+                fig2.add_trace(
+                    go.Scatter(
+                        x=daily_lat["date"],
+                        y=daily_lat["max"],
+                        name="MAX",
+                        line=dict(color=COLORS["red"], width=1, dash="dot"),
+                    )
+                )
+                fig2.add_trace(
+                    go.Scatter(
+                        x=daily_lat["date"],
+                        y=daily_lat["mean"],
+                        name="AVG",
+                        line=dict(color=COLORS["gold"], width=2),
+                        fill="tonexty",
+                        fillcolor="rgba(245,158,11,0.06)",
+                    )
+                )
+                fig2.add_trace(
+                    go.Scatter(
+                        x=daily_lat["date"],
+                        y=daily_lat["min"],
+                        name="MIN",
+                        line=dict(color=COLORS["green"], width=1, dash="dot"),
+                    )
+                )
                 fig2.update_layout(**CHART_LAYOUT, title="LATENCY TREND (ms)", height=220)
                 st.plotly_chart(fig2, use_container_width=True)
 
             # Row 2: histogram + heatmap
             c3, c4 = st.columns(2)
             with c3:
-                fig3 = go.Figure(go.Histogram(
-                    x=df["latency_ms"], nbinsx=25,
-                    marker=dict(
-                        color=df["latency_ms"],
-                        colorscale=[[0, COLORS["green"]], [0.5, COLORS["gold"]], [1, COLORS["red"]]],
-                        showscale=False,
-                    ),
-                ))
+                fig3 = go.Figure(
+                    go.Histogram(
+                        x=df["latency_ms"],
+                        nbinsx=25,
+                        marker=dict(
+                            color=df["latency_ms"],
+                            colorscale=[[0, COLORS["green"]], [0.5, COLORS["gold"]], [1, COLORS["red"]]],
+                            showscale=False,
+                        ),
+                    )
+                )
                 fig3.update_layout(**CHART_LAYOUT, title="LATENCY DISTRIBUTION", height=220)
                 st.plotly_chart(fig3, use_container_width=True)
 
@@ -567,21 +649,30 @@ elif page == "Query Analytics":
                 hourly = df.groupby("hour").size().reset_index(name="count")
                 all_hours = pd.DataFrame({"hour": range(24)})
                 hourly = all_hours.merge(hourly, on="hour", how="left").fillna(0)
-                fig4 = go.Figure(go.Bar(
-                    x=hourly["hour"],
-                    y=hourly["count"],
-                    marker=dict(
-                        color=hourly["count"],
-                        colorscale=[[0, COLORS["panel"]], [1, COLORS["accent"]]],
-                        showscale=False,
-                    ),
-                ))
-                fig4.update_layout(**CHART_LAYOUT, title="QUERIES BY HOUR", height=220,
-                                   xaxis=dict(tickmode="linear", dtick=4, gridcolor=COLORS["border"]))
+                fig4 = go.Figure(
+                    go.Bar(
+                        x=hourly["hour"],
+                        y=hourly["count"],
+                        marker=dict(
+                            color=hourly["count"],
+                            colorscale=[[0, COLORS["panel"]], [1, COLORS["accent"]]],
+                            showscale=False,
+                        ),
+                    )
+                )
+                fig4.update_layout(
+                    **CHART_LAYOUT,
+                    title="QUERIES BY HOUR",
+                    height=220,
+                    xaxis=dict(tickmode="linear", dtick=4, gridcolor=COLORS["border"]),
+                )
                 st.plotly_chart(fig4, use_container_width=True)
 
             # Recent queries table
-            st.markdown(f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; text-transform: uppercase; margin: 8px 0 12px;">RECENT QUERIES</div>', unsafe_allow_html=True)
+            st.markdown(
+                f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["muted"]}; letter-spacing: 2px; text-transform: uppercase; margin: 8px 0 12px;">RECENT QUERIES</div>',
+                unsafe_allow_html=True,
+            )
             recent = df[["query_text", "latency_ms", "rating", "created_at"]].head(15).copy()
             recent["rating"] = recent["rating"].map({1.0: "↑ YES", -1.0: "↓ NO", None: "—"})
             recent["created_at"] = recent["created_at"].dt.strftime("%H:%M:%S")
@@ -619,35 +710,52 @@ elif page == "Feedback Report":
                 m1.metric("TOTAL RATED", total)
                 m2.metric("↑ POSITIVE", positive)
                 m3.metric("↓ NEGATIVE", negative)
-                m4.metric("SATISFACTION", f"{sat_rate:.1f}%",
-                          delta=f"+{sat_rate-50:.1f}%" if sat_rate > 50 else f"{sat_rate-50:.1f}%")
+                m4.metric(
+                    "SATISFACTION",
+                    f"{sat_rate:.1f}%",
+                    delta=f"+{sat_rate-50:.1f}%" if sat_rate > 50 else f"{sat_rate-50:.1f}%",
+                )
 
                 st.markdown("<br>", unsafe_allow_html=True)
                 c1, c2 = st.columns(2)
 
                 with c1:
                     # Gauge chart for satisfaction
-                    fig1 = go.Figure(go.Indicator(
-                        mode="gauge+number",
-                        value=sat_rate,
-                        number=dict(suffix="%", font=dict(family="IBM Plex Mono", size=32, color=COLORS["text"])),
-                        gauge=dict(
-                            axis=dict(range=[0, 100], tickcolor=COLORS["muted"],
-                                      tickfont=dict(family="IBM Plex Mono", size=10, color=COLORS["muted"])),
-                            bar=dict(color=COLORS["accent"] if sat_rate > 70 else COLORS["gold"] if sat_rate > 40 else COLORS["red"],
-                                     thickness=0.3),
-                            bgcolor=COLORS["panel"],
-                            bordercolor=COLORS["border"],
-                            borderwidth=1,
-                            steps=[
-                                dict(range=[0, 40], color=COLORS["bg"]),
-                                dict(range=[40, 70], color=COLORS["surface"]),
-                                dict(range=[70, 100], color=COLORS["panel"]),
-                            ],
-                            threshold=dict(line=dict(color=COLORS["green"], width=2), thickness=0.75, value=70),
-                        ),
-                        title=dict(text="SATISFACTION RATE", font=dict(family="IBM Plex Mono", size=11, color=COLORS["muted"])),
-                    ))
+                    fig1 = go.Figure(
+                        go.Indicator(
+                            mode="gauge+number",
+                            value=sat_rate,
+                            number=dict(suffix="%", font=dict(family="IBM Plex Mono", size=32, color=COLORS["text"])),
+                            gauge=dict(
+                                axis=dict(
+                                    range=[0, 100],
+                                    tickcolor=COLORS["muted"],
+                                    tickfont=dict(family="IBM Plex Mono", size=10, color=COLORS["muted"]),
+                                ),
+                                bar=dict(
+                                    color=(
+                                        COLORS["accent"]
+                                        if sat_rate > 70
+                                        else COLORS["gold"] if sat_rate > 40 else COLORS["red"]
+                                    ),
+                                    thickness=0.3,
+                                ),
+                                bgcolor=COLORS["panel"],
+                                bordercolor=COLORS["border"],
+                                borderwidth=1,
+                                steps=[
+                                    dict(range=[0, 40], color=COLORS["bg"]),
+                                    dict(range=[40, 70], color=COLORS["surface"]),
+                                    dict(range=[70, 100], color=COLORS["panel"]),
+                                ],
+                                threshold=dict(line=dict(color=COLORS["green"], width=2), thickness=0.75, value=70),
+                            ),
+                            title=dict(
+                                text="SATISFACTION RATE",
+                                font=dict(family="IBM Plex Mono", size=11, color=COLORS["muted"]),
+                            ),
+                        )
+                    )
                     fig1.update_layout(**CHART_LAYOUT, height=260)
                     st.plotly_chart(fig1, use_container_width=True)
 
@@ -657,17 +765,21 @@ elif page == "Feedback Report":
                     daily = rated_daily.groupby(["date", "rating"]).size().unstack(fill_value=0).reset_index()
                     fig2 = go.Figure()
                     if 1.0 in daily.columns:
-                        fig2.add_trace(go.Bar(x=daily["date"], y=daily[1.0], name="Positive",
-                                              marker_color=COLORS["green"]))
+                        fig2.add_trace(
+                            go.Bar(x=daily["date"], y=daily[1.0], name="Positive", marker_color=COLORS["green"])
+                        )
                     if -1.0 in daily.columns:
-                        fig2.add_trace(go.Bar(x=daily["date"], y=daily[-1.0], name="Negative",
-                                              marker_color=COLORS["red"]))
-                    fig2.update_layout(**CHART_LAYOUT, title="FEEDBACK OVER TIME",
-                                       barmode="stack", height=260)
+                        fig2.add_trace(
+                            go.Bar(x=daily["date"], y=daily[-1.0], name="Negative", marker_color=COLORS["red"])
+                        )
+                    fig2.update_layout(**CHART_LAYOUT, title="FEEDBACK OVER TIME", barmode="stack", height=260)
                     st.plotly_chart(fig2, use_container_width=True)
 
                 if negative > 0:
-                    st.markdown(f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["red"]}; letter-spacing: 2px; text-transform: uppercase; margin: 16px 0 10px;">⚠ QUERIES NEEDING IMPROVEMENT [{negative}]</div>', unsafe_allow_html=True)
+                    st.markdown(
+                        f'<div style="font-family: IBM Plex Mono; font-size: 10px; color: {COLORS["red"]}; letter-spacing: 2px; text-transform: uppercase; margin: 16px 0 10px;">⚠ QUERIES NEEDING IMPROVEMENT [{negative}]</div>',
+                        unsafe_allow_html=True,
+                    )
                     neg_df = rated[rated["rating"] == -1.0][["query_text", "created_at"]].head(10).copy()
                     neg_df["created_at"] = neg_df["created_at"].dt.strftime("%Y-%m-%d %H:%M")
                     neg_df.columns = ["Query", "Time"]

@@ -1,8 +1,10 @@
 """
 Shared configuration for FinComply ingestion pipeline.
 """
+
 import os
 from dataclasses import dataclass
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,9 +26,9 @@ class Config:
     chunk_overlap: int = 64
 
     # Retrieval
-    top_k_dense: int = 20       # dense vector search candidates
-    top_k_rerank: int = 5       # after Cohere rerank
-    bm25_weight: float = 0.3    # hybrid search weight (0=dense only, 1=BM25 only)
+    top_k_dense: int = 20  # dense vector search candidates
+    top_k_rerank: int = 5  # after Cohere rerank
+    bm25_weight: float = 0.3  # hybrid search weight (0=dense only, 1=BM25 only)
 
     # PostgreSQL
     postgres_host: str = os.getenv("POSTGRES_HOST", "postgres")

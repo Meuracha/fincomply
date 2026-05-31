@@ -2,13 +2,14 @@
 JWT Authentication for FinComply API.
 Simple username/password auth with JWT tokens.
 """
-import os
+
 import logging
+import os
 from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
@@ -47,6 +48,7 @@ def get_users() -> dict:
         }
     return users
 
+
 # ─── Schemas ──────────────────────────────────────────────────
 
 
@@ -61,6 +63,7 @@ class TokenResponse(BaseModel):
     username: str
     role: str
     expires_in: int
+
 
 # ─── Core auth functions ───────────────────────────────────────
 
@@ -84,6 +87,7 @@ def create_access_token(data: dict) -> str:
     expire = datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
     payload["exp"] = expire
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
 
 # ─── FastAPI dependency ────────────────────────────────────────
 security = HTTPBearer(auto_error=False)

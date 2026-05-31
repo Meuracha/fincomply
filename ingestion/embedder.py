@@ -3,6 +3,7 @@ Embedding client — calls the dedicated Embedding Service via HTTP.
 Both API and Ingestion containers use this same client.
 Embedding Service runs bge-m3 with dense + sparse (hybrid search support).
 """
+
 import logging
 import os
 from typing import List, Tuple
@@ -44,7 +45,7 @@ class BGEEmbedder:
 
         all_embeddings = []
         for i in range(0, len(texts), batch_size):
-            batch_texts = texts[i: i + batch_size]
+            batch_texts = texts[i : i + batch_size]
             response = requests.post(
                 f"{self.base_url}/embed/chunks",
                 json={"texts": batch_texts},
@@ -57,16 +58,18 @@ class BGEEmbedder:
         results = []
         for i, chunk in enumerate(chunks):
             sparse = {int(k): v for k, v in all_embeddings[i]["sparse"].items()}
-            results.append({
-                "chunk_id": chunk.chunk_id,
-                "text": chunk.text,
-                "filename": chunk.filename,
-                "source": chunk.source,
-                "page_num": chunk.page_num,
-                "chunk_index": chunk.chunk_index,
-                "dense_vector": all_embeddings[i]["dense"],
-                "sparse_vector": sparse,
-            })
+            results.append(
+                {
+                    "chunk_id": chunk.chunk_id,
+                    "text": chunk.text,
+                    "filename": chunk.filename,
+                    "source": chunk.source,
+                    "page_num": chunk.page_num,
+                    "chunk_index": chunk.chunk_index,
+                    "dense_vector": all_embeddings[i]["dense"],
+                    "sparse_vector": sparse,
+                }
+            )
 
         logger.info(f"Embedded {len(results)} chunks")
         return results

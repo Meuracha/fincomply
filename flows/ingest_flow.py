@@ -1,16 +1,17 @@
 """
 Prefect ingestion flow: PDF/DOCX → Chunk → Embed → Index to Qdrant → Log to PostgreSQL
 """
+
 from pathlib import Path
 
-from prefect import flow, task, get_run_logger
+from prefect import flow, get_run_logger, task
 
-from ingestion.config import config
-from ingestion.loaders.pdf_loader import PDFLoader
-from ingestion.loaders.docx_loader import DOCXLoader
 from ingestion.chunker import SemanticChunker
+from ingestion.config import config
 from ingestion.embedder import BGEFullEmbedder
 from ingestion.indexer import QdrantIndexer
+from ingestion.loaders.docx_loader import DOCXLoader
+from ingestion.loaders.pdf_loader import PDFLoader
 
 # Source mapping based on filename keywords
 SOURCE_MAPPING = {
@@ -86,6 +87,7 @@ def index_to_qdrant(embedded_chunks, document):
 def log_to_postgres(document, chunk_count: int):
     """Log document metadata to PostgreSQL."""
     import psycopg2
+
     logger = get_run_logger()
 
     try:

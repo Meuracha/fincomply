@@ -2,8 +2,10 @@
 LangFuse observability — traces every RAG query end-to-end.
 Tracks: retrieval, reranking, generation, feedback, latency.
 """
+
 import logging
 from typing import List, Optional
+
 from langfuse import Langfuse
 
 logger = logging.getLogger(__name__)

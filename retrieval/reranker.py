@@ -2,6 +2,7 @@
 Cohere Rerank — re-scores top-K candidates for higher precision.
 Reduces top-20 hybrid search results to top-5 most relevant chunks.
 """
+
 import logging
 from typing import List
 
@@ -40,10 +41,12 @@ class CohereReranker:
         reranked = []
         for result in response.results:
             candidate = candidates[result.index]
-            reranked.append({
-                **candidate,
-                "rerank_score": result.relevance_score,
-            })
+            reranked.append(
+                {
+                    **candidate,
+                    "rerank_score": result.relevance_score,
+                }
+            )
 
         logger.info(f"Reranked {len(candidates)} → {len(reranked)} chunks")
         return reranked

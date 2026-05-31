@@ -2,17 +2,18 @@
 Qdrant indexer — upserts embedded chunks to vector database.
 Uses named vectors for hybrid search (dense + sparse).
 """
+
 import logging
 from typing import List
 
 from qdrant_client import QdrantClient
 from qdrant_client.models import (
     Distance,
-    VectorParams,
-    SparseVectorParams,
-    SparseIndexParams,
     PointStruct,
+    SparseIndexParams,
     SparseVector,
+    SparseVectorParams,
+    VectorParams,
 )
 
 logger = logging.getLogger(__name__)
@@ -39,11 +40,7 @@ class QdrantIndexer:
                         distance=Distance.COSINE,
                     )
                 },
-                sparse_vectors_config={
-                    SPARSE_VECTOR_NAME: SparseVectorParams(
-                        index=SparseIndexParams(on_disk=False)
-                    )
-                },
+                sparse_vectors_config={SPARSE_VECTOR_NAME: SparseVectorParams(index=SparseIndexParams(on_disk=False))},
             )
             logger.info(f"Created collection: {self.collection_name}")
         else:
@@ -77,19 +74,18 @@ class QdrantIndexer:
         for i in range(0, len(points), batch_size):
             self.client.upsert(
                 collection_name=self.collection_name,
-                points=points[i: i + batch_size],
+                points=points[i : i + batch_size],
             )
 
         logger.info(f"Upserted {len(points)} chunks to Qdrant")
         return len(points)
 
     def delete_by_filename(self, filename: str) -> int:
-        from qdrant_client.models import Filter, FieldCondition, MatchValue
+        from qdrant_client.models import FieldCondition, Filter, MatchValue
+
         result = self.client.delete(
             collection_name=self.collection_name,
-            points_selector=Filter(
-                must=[FieldCondition(key="filename", match=MatchValue(value=filename))]
-            ),
+            points_selector=Filter(must=[FieldCondition(key="filename", match=MatchValue(value=filename))]),
         )
         logger.info(f"Deleted chunks for: {filename}")
         return result.status
