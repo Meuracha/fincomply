@@ -6,12 +6,7 @@ import logging
 from typing import List
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import (
-    Fusion,
-    FusionQuery,
-    Prefetch,
-    SparseVector,
-)
+from qdrant_client.models import Fusion, FusionQuery, Prefetch, SparseVector
 
 logger = logging.getLogger(__name__)
 
