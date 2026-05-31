@@ -64,12 +64,11 @@ jobs:
           echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
 
       - name: Start core services
-        run: docker-compose up -d postgres qdrant redis
+        run: docker compose up -d postgres qdrant redis
         timeout-minutes: 3
 
       - name: Start API (skip embedding dependency)
-        run: |
-          docker-compose up -d api --no-deps
+        run: docker compose up -d api --no-deps
         timeout-minutes: 3
 
       - name: Wait for API health
@@ -93,7 +92,7 @@ jobs:
 
       - name: Tear down
         if: always()
-        run: docker-compose down
+        run: docker compose down
 
   release:
     runs-on: ubuntu-latest
