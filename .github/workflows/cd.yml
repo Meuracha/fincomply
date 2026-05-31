@@ -7,6 +7,9 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +30,7 @@ jobs:
           context: .
           file: docker/Dockerfile.api
           push: true
-          tags: ghcr.io/${{ env.REPO_LC }}/api:latest
+          tags: ghcr.io/${{ env.REPO_LC }}-api:latest
 
       - name: Build and push ingestion image
         uses: docker/build-push-action@v5
@@ -35,7 +38,7 @@ jobs:
           context: .
           file: docker/Dockerfile.ingestion
           push: true
-          tags: ghcr.io/${{ env.REPO_LC }}/ingestion:latest
+          tags: ghcr.io/${{ env.REPO_LC }}-ingestion:latest
 
       - name: Build and push embedding image
         uses: docker/build-push-action@v5
@@ -43,7 +46,7 @@ jobs:
           context: .
           file: docker/Dockerfile.embedding
           push: true
-          tags: ghcr.io/${{ env.REPO_LC }}/embedding:latest
+          tags: ghcr.io/${{ env.REPO_LC }}-embedding:latest
 
   smoke-test:
     runs-on: ubuntu-latest
