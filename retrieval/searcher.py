@@ -66,3 +66,4 @@ class HybridSearcher:
             }
             for point in results.points
         ]
+        
