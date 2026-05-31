@@ -37,7 +37,7 @@ jobs:
         run: black . --check --line-length=120 --exclude='/(\.venv|data|docs|dashboard\/app\.py)/'
 
       - name: Import order check (isort)
-        run: isort . --check-only --profile=black --force-sort-within-sections --skip=data --skip=docs --skip=dashboard/app.py
+        run: isort . --check-only --profile=black --skip=data --skip=docs --skip=dashboard/app.py
 
       - name: Security scan (bandit)
         run: bandit -r serving ingestion retrieval embedding_service flows monitoring -ll
