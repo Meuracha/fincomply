@@ -9,7 +9,7 @@ from prefect import flow, get_run_logger, task
 
 from ingestion.chunker import SemanticChunker
 from ingestion.config import config
-from ingestion.embedder import BGEFullEmbedder as BGEEmbedder
+from ingestion.embedder import BGEEmbedder
 from ingestion.indexer import QdrantIndexer
 from ingestion.loaders.docx_loader import DOCXLoader
 from ingestion.loaders.pdf_loader import PDFLoader
@@ -96,7 +96,7 @@ def refresh_flow(data_dir: str = "/app/data/raw"):
         return
 
     # Step 3: Re-initialize embedder and indexer (picks up new model version)
-    embedder = BGEFullEmbedder(model_name=config.embedding_model)
+    embedder = BGEEmbedder(model_name=config.embedding_model)
     indexer = QdrantIndexer(
         host=config.qdrant_host,
         port=config.qdrant_port,

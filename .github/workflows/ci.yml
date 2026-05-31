@@ -31,7 +31,7 @@ jobs:
           pip install -r requirements-dev.txt
 
       - name: Lint (flake8)
-        run: flake8 . --max-line-length=120 --exclude=.venv,__pycache__,data,docs,dashboard/app.py
+        run: flake8 . --max-line-length=120 --extend-ignore=E203 --exclude=.venv,__pycache__,data,docs,dashboard/app.py
 
       - name: Format check (black)
         run: black . --check --line-length=120 --exclude='/(\.venv|data|docs|dashboard\/app\.py)/'
