@@ -11,6 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set lowercase repo name
+        run: echo "REPO_LC=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -24,7 +27,7 @@ jobs:
           context: .
           file: docker/Dockerfile.api
           push: true
-          tags: ghcr.io/${{ github.repository }}/api:latest
+          tags: ghcr.io/${{ env.REPO_LC }}/api:latest
 
       - name: Build and push ingestion image
         uses: docker/build-push-action@v5
@@ -32,7 +35,7 @@ jobs:
           context: .
           file: docker/Dockerfile.ingestion
           push: true
-          tags: ghcr.io/${{ github.repository }}/ingestion:latest
+          tags: ghcr.io/${{ env.REPO_LC }}/ingestion:latest
 
       - name: Build and push embedding image
         uses: docker/build-push-action@v5
@@ -40,7 +43,7 @@ jobs:
           context: .
           file: docker/Dockerfile.embedding
           push: true
-          tags: ghcr.io/${{ github.repository }}/embedding:latest
+          tags: ghcr.io/${{ env.REPO_LC }}/embedding:latest
 
   smoke-test:
     runs-on: ubuntu-latest
