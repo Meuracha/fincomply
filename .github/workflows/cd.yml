@@ -58,10 +58,12 @@ jobs:
       - name: Create .env
         run: |
           cp .env.example .env
+          echo "" >> .env
           echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> .env
           echo "COHERE_API_KEY=${{ secrets.COHERE_API_KEY }}" >> .env
           echo "JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}" >> .env
           echo "ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }}" >> .env
+          echo "TOKEN_EXPIRE_HOURS=24" >> .env
 
       - name: Start core services
         run: docker compose up -d postgres qdrant redis
